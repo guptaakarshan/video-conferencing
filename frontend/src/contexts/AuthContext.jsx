@@ -5,7 +5,7 @@ import httpStatus from "http-status";
 
 export const AuthContext = createContext({});
 const client = axios.create({
-  baseURL: "http://video-conferencing-psi.vercel.app/api/v1/users",
+  baseURL: "https://video-conferencing-psi.vercel.app/api/v1/users",
 });
 
 export const AuthProvider = ({ children }) => {

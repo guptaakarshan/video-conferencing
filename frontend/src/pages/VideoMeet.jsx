@@ -13,7 +13,7 @@ import StopScreenShareIcon from "@mui/icons-material/StopScreenShare";
 import ChatIcon from "@mui/icons-material/Chat";
 import { useNavigate } from "react-router-dom";
 
-const server_url = "http://video-conferencing-psi.vercel.app";
+const server_url = "https://video-conferencing-psi.vercel.app";
 let connections = {};
 
 const peerConfigConnections = {
