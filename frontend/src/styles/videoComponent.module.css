@@ -1,3 +1,56 @@
+.lobbyContainer {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f3f4f6; /* Light gray like Meet */
+}
+
+.lobbyCard {
+  background: white;
+  padding: 32px;
+  width: 400px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.lobbyHeading {
+  margin-bottom: 20px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #333;
+}
+
+.videoPreviewWrapper {
+  margin: 20px auto;
+  width: 100%;
+  height: 230px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.localVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.connectButton {
+  margin-top: 16px;
+  width: 100%;
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+
 .meetVideoContainer{
   position: relative;
   height:100vh;

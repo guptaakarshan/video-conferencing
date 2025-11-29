@@ -29,7 +29,6 @@ export default function VideoMeetComponent() {
   const connectionsRef = useRef({});
   const connections = connectionsRef.current;
 
-
   const [videoAvailable, setVideoAvailable] = useState(true);
   const [audioAvailable, setAudioAvailable] = useState(true);
   const [video, setVideo] = useState(true);
@@ -46,18 +45,16 @@ export default function VideoMeetComponent() {
 
   const navigate = useNavigate();
 
+  // AUTO SCROLL CHAT
 
-    // AUTO SCROLL CHAT
-     
   useEffect(() => {
     if (chatScrollRef.current) {
       chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
     }
   }, [messages, showModal]);
 
-  
-    // FIXED: SINGLE PERMISSION CHECK
-    
+  // FIXED: SINGLE PERMISSION CHECK
+
   const getPermission = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -86,9 +83,8 @@ export default function VideoMeetComponent() {
     getPermission();
   }, []);
 
+  // 🎥 Handle getUserMedia Stream
 
-    // 🎥 Handle getUserMedia Stream
-  
   const getUserMediaSuccess = (stream) => {
     try {
       window.localStream?.getTracks().forEach((t) => t.stop());
@@ -141,9 +137,8 @@ export default function VideoMeetComponent() {
     }
   }, [video, audio]);
 
- 
-     //SIGNAL HANDLING FROM SERVER
-     
+  //SIGNAL HANDLING FROM SERVER
+
   const gotMessageFromServer = (fromId, message) => {
     if (fromId === socketIdRef.current) return;
 
@@ -176,9 +171,8 @@ export default function VideoMeetComponent() {
     }
   };
 
- 
-     // FIXED: CHAT MESSAGES
-     
+  // FIXED: CHAT MESSAGES
+
   const addMessage = (data, sender, socketSender) => {
     setMessages((prev) => [...prev, { sender, data }]);
 
@@ -187,9 +181,8 @@ export default function VideoMeetComponent() {
     }
   };
 
-  
-     // SOCKET.IO CONNECTION
-     
+  // SOCKET.IO CONNECTION
+
   const connectToSocketServer = () => {
     socketRef.current = io.connect(server_url, { transports: ["websocket"] });
 
@@ -270,8 +263,8 @@ export default function VideoMeetComponent() {
     connectToSocketServer();
   };
 
-     // SCREEN SHARING FIX
-   
+  // SCREEN SHARING FIX
+
   const startScreenShare = async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -328,9 +321,8 @@ export default function VideoMeetComponent() {
     if (screen) startScreenShare();
   }, [screen]);
 
-  
-    // 📞 END CALL
- 
+  // 📞 END CALL
+
   const handleEndCall = () => {
     try {
       window.localStream?.getTracks().forEach((t) => t.stop());
@@ -340,8 +332,6 @@ export default function VideoMeetComponent() {
     navigate("/home");
   };
 
-
-  
   useEffect(() => {
     return () => {
       socketRef.current?.disconnect();
@@ -352,18 +342,36 @@ export default function VideoMeetComponent() {
   return (
     <div>
       {askForUsername ? (
-        <div>
-          <h2>Enter into Lobby</h2>
-          <TextField
-            label="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <Button variant="contained" onClick={connect}>
-            Connect
-          </Button>
+        <div className={styles.lobbyContainer}>
+          <div className={styles.lobbyCard}>
+            <h2 className={styles.lobbyHeading}>Enter into Lobby</h2>
 
-          <video ref={localVideoRef} autoPlay muted />
+            <TextField
+              label="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              variant="outlined"
+              fullWidth
+            />
+
+            <div className={styles.videoPreviewWrapper}>
+              <video
+                ref={localVideoRef}
+                autoPlay
+                muted
+                className={styles.localVideo}
+              ></video>
+            </div>
+
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={connect}
+              className={styles.connectButton}
+            >
+              CONNECT
+            </Button>
+          </div>
         </div>
       ) : (
         <>
