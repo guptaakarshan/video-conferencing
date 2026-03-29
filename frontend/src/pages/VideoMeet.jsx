@@ -261,7 +261,6 @@ export default function VideoMeetComponent() {
   const connect = () => {
     setAskForUsername(false);
 
-    
     setVideo(videoAvailable);
     setAudio(audioAvailable);
 

@@ -8,16 +8,26 @@ const client = axios.create({
   baseURL: `${server}/api/v1/users`
   })
 
+const getAuthConfig = () => {
+  // Backend now expects JWT in Authorization header.
+  const token = localStorage.getItem("token");
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
+
 export const AuthProvider = ({ children }) => {
   const authContext = useContext(AuthContext);
   const [userData, setUserData] = useState(authContext);
 
   const router = useNavigate();
 
-  const handleRegister = async (name, username, password) => {
+  const handleRegister = async (email, username, password) => {
     try {
       let request = await client.post("/register", {
-        name: name,
+        email: email,
         username: username,
         password: password,
       });
@@ -30,10 +40,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const handleLogin = async (username, password) => {
+  const handleLogin = async (email, password) => {
     try {
       let request = await client.post("/login", {
-        username: username,
+        email: email,
         password: password,
       });
       if (request.status === httpStatus.OK) {
@@ -47,11 +57,7 @@ export const AuthProvider = ({ children }) => {
 
   const getHistoryOfUser = async () => {
     try {
-      let request = await client.get("/get_all_activity", {
-        params: {
-          token: localStorage.getItem("token"),
-        },
-      });
+      let request = await client.get("/get_all_activity", getAuthConfig());
       return request.data;
     } catch (err) {
       throw err;
@@ -59,10 +65,13 @@ export const AuthProvider = ({ children }) => {
   };
   const addToUserHistory = async (meetingCode) => {
     try {
-      let request = await client.post("/add_to_activity", {
-        token: localStorage.getItem("token"),
-        meeting_code: meetingCode,
-      });
+      let request = await client.post(
+        "/add_to_activity",
+        {
+          meeting_code: meetingCode,
+        },
+        getAuthConfig()
+      );
       return request;
     } catch (e) {
       throw e;

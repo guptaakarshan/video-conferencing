@@ -1,33 +1,47 @@
 import { User } from "../models/user.model.js";
 import httpStatus from "http-status";
-import bcrypt, { hash } from "bcrypt";
-import crypto from "crypto";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { Meeting } from "../models/meeting.model.js";
-const login = async (req, res) => {
-  const { username, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ message: "please provide" });
+// Keep this in environment variables in production deployments.
+const JWT_SECRET = process.env.JWT_SECRET || "replace-this-in-production";
+const JWT_EXPIRES_IN = "7d";
+
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ message: "email and password are required" });
   }
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res
         .status(httpStatus.NOT_FOUND)
-        .json({ message: "user not found" });
+        .json({ message: "user not found for this email" });
     }
     let isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (isPasswordCorrect) {
-      let token = crypto.randomBytes(20).toString("hex");
+      // Issue a signed JWT instead of persisting random tokens in DB.
+      const token = jwt.sign(
+        {
+          userId: user._id.toString(),
+          username: user.username,
+          email: user.email,
+        },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+      );
 
-      user.token = token;
-      await user.save();
-      return res.status(httpStatus.OK).json({ token: token });
+      return res.status(httpStatus.OK).json({ token });
     } else {
       return res
         .status(httpStatus.UNAUTHORIZED)
-        .json({ message: "invalid username or password" });
+        .json({ message: "invalid email or password" });
     }
   } catch (e) {
     return res.status(500).json({ message: `something went wrong ${e}` });
@@ -35,20 +49,36 @@ const login = async (req, res) => {
 };
 
 const register = async (req, res) => {
-  const { name, username, password } = req.body;
+  const { email, username, password } = req.body;
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!email || !username || !password) {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ message: "email, username and password are required" });
+  }
+
+  if (!emailRegex.test(email)) {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ message: "please provide a valid email" });
+  }
 
   try {
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }],
+    });
     if (existingUser) {
       return res
         .status(httpStatus.FOUND)
-        .json({ message: "user already exists" });
+        .json({ message: "user already exists with this username or email" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
-      name: name,
+      email: email,
       username: username,
       password: hashedPassword,
     });
@@ -62,24 +92,20 @@ const register = async (req, res) => {
 };
 
 const getUserHistory = async (req, res) => {
-  const { token } = req.query;
-
   try {
-    const user = await User.findOne({ token: token });
-    const meetings = await Meeting.find({ user_id: user.username });
+    // req.user is populated by JWT middleware.
+    const meetings = await Meeting.find({ user_id: req.user.username });
     res.json(meetings);
   } catch (e) {
     res.json({ message: `something went wrong ${e}` });
   }
 };
 const addToHistory = async (req, res) => {
-  const { token, meeting_code } = req.body;
+  const { meeting_code } = req.body;
 
   try {
-    const user = await User.findOne({ token: token });
-
     const newMeeting = new Meeting({
-      user_id: user.username,
+      user_id: req.user.username,
       meetingCode: meeting_code,
     });
     await newMeeting.save();

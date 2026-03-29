@@ -37,14 +37,14 @@ function HomeComponent() {
                         }
                     }>
                         <RestoreIcon />
-                        <p style={{fontSize:"25px",fontWeight:"bold",color:"black"}}>History</p>
+                        <p style={{fontSize:"25px",fontWeight:"bold",color:"black"}}>HISTORY</p>
                     </IconButton>
 
                     <Button style={{fontSize:"25px",fontWeight:"bold",color:"black"}} onClick={() => {
                         localStorage.removeItem("token")
                         navigate("/auth")
                     }}>
-                        Logout
+                        LOGOUT
                     </Button>
                 </div>
 

@@ -10,6 +10,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { AuthContext } from "../contexts/AuthContext";
 import { Snackbar } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import bg from "../assets/loginbackground.jpg";
 
 export default function Authentication() {
@@ -17,21 +18,37 @@ export default function Authentication() {
 
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [name, setName] = React.useState("");
+  const [email, setEmail] = React.useState("");
   const [error, setError] = React.useState("");
   const [message, setMessage] = React.useState("");
   const [formState, setFormState] = React.useState(0);
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
 
   const { handleRegister, handleLogin } = React.useContext(AuthContext);
+
+  const isValidEmail = (value) => {
+    // Simple RFC-like email check for client-side validation.
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  };
 
   const handleAuth = async () => {
     try {
       if (formState === 0) {
-        await handleLogin(username, password);
+        if (!isValidEmail(email)) {
+          setError("Please enter a valid email address");
+          return;
+        }
+
+        await handleLogin(email, password);
       }
       if (formState === 1) {
-        let result = await handleRegister(name, username, password);
+        if (!isValidEmail(email)) {
+          setError("Please enter a valid email address");
+          return;
+        }
+
+        let result = await handleRegister(email, username, password);
         console.log(result);
         setMessage(result);
         setOpen(true);
@@ -39,6 +56,7 @@ export default function Authentication() {
         setFormState(0);
         setUsername("");
         setPassword("");
+        setEmail("");
       }
     } catch (err) {
       console.log(err);
@@ -99,9 +117,10 @@ export default function Authentication() {
                 variant={formState === 0 ? "contained" : "text"}
                 onClick={() => {
                   setFormState(0);
-                  setName("");
+                  setEmail("");
                   setUsername("");
                   setPassword("");
+                  setError("");
                 }}
               >
                 Sign In
@@ -110,9 +129,10 @@ export default function Authentication() {
                 variant={formState === 1 ? "contained" : "text"}
                 onClick={() => {
                   setFormState(1);
-                  setName("");
+                  setEmail("");
                   setUsername("");
                   setPassword("");
+                  setError("");
                 }}
               >
                 Sign Up
@@ -120,27 +140,33 @@ export default function Authentication() {
             </div>
 
             <Box component="form" noValidate sx={{ mt: 1 }}>
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                label="Email"
+                type="email"
+                value={email}
+                autoFocus
+                error={email.length > 0 && !isValidEmail(email)}
+                helperText={
+                  email.length > 0 && !isValidEmail(email)
+                    ? "Enter a valid email"
+                    : ""
+                }
+                onChange={(e) => setEmail(e.target.value)}
+              />
+
               {formState === 1 && (
                 <TextField
                   margin="normal"
                   required
                   fullWidth
-                  label="Full Name"
-                  value={name}
-                  autoFocus
-                  onChange={(e) => setName(e.target.value)}
+                  label="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               )}
-
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                label="Username"
-                value={username}
-                autoFocus
-                onChange={(e) => setUsername(e.target.value)}
-              />
               <TextField
                 margin="normal"
                 required
@@ -161,6 +187,16 @@ export default function Authentication() {
                 onClick={handleAuth}
               >
                 {formState === 0 ? "Login" : "Register"}
+              </Button>
+
+              <Button
+                type="button"
+                fullWidth
+                variant="outlined"
+                sx={{ mb: 1 }}
+                onClick={() => navigate("/")}
+              >
+                Go to Home
               </Button>
             </Box>
           </Box>
